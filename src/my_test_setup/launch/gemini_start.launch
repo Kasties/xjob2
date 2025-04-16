@@ -1,0 +1,25 @@
+<!-- 03_gemini_logic.launch -->
+<launch>
+
+  <!-- ================== GEMINI NAVIGATION LOGIC ================== -->
+  <group ns="gemini_logic">
+
+    <!-- 6. Start the Gemini Navigator Node -->
+    <!-- This node subscribes to /perception/* topics and /odom -->
+    <!-- It publishes /gemini/direction and /gemini/speed when a person is detected -->
+    <!-- *** NOTE: This node DOES NOT directly control the robot (no /cmd_vel output) *** -->
+    <!-- Assumes /odom is provided by 01_fake_robot_state.launch -->
+    <!-- Assumes /perception/* topics are provided by 02_sensors.launch -->
+    <node pkg="my_test_setup" type="gemini_node.py" name="gemini_node" output="screen">
+        <!-- Parameter for Gemini call interval (seconds) -->
+        <param name="gemini_interval" value="5.0"/>
+
+        <!-- Optional/Recommended: Pass API Key securely via environment variable -->
+        <!-- Ensure GOOGLE_API_KEY is set in the terminal before running roslaunch -->
+        <!-- <param name="google_api_key" value="$(env GOOGLE_API_KEY)" /> -->
+        <!-- The script currently uses python-dotenv, so ensure .env file is findable -->
+    </node>
+
+  </group> <!-- end ns="gemini_logic" -->
+
+</launch>

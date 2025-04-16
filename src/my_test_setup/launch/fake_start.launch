@@ -1,0 +1,30 @@
+<!-- 01_fake_robot_state.launch -->
+<launch>
+  <arg name="use_sim_time" default="false"/> <!-- Add if simulating -->
+
+  <!-- ================== FAKE ROBOT STATE ================== -->
+  <group ns="fake_robot_state">
+
+    <!-- 1. Fake Odometry Publisher (Publishes /odom and odom -> base_link TF) -->
+    <!-- *** Ensure 'my_test_setup' is the correct package name for fake_odom_pub.py *** -->
+    <node pkg="my_test_setup" type="fake_odom_pub.py" name="fake_odom_publisher" output="screen" />
+
+    <!-- 2. Static Transform Publisher (base_link -> laser_link) -->
+    <!-- IMPORTANT: You MUST adjust the 'args' below based on your laser's position relative to base_link! -->
+    <!-- Args: x y z yaw pitch roll parent_frame child_frame period_in_ms -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_laser_broadcaster"
+          args="0.1 0.0 0.0 0.0 0.0 0.0 base_link laser_link" />
+          <!-- *** ADJUST THE 6 VALUES (x y z yaw pitch roll) FOR YOUR SETUP *** -->
+
+    <!-- 3. Static Transform Publisher (base_link -> zed_camera_link) -->
+    <!-- IMPORTANT: You MUST adjust the 'args' below based on your ZED camera's position relative to base_link! -->
+    <!-- Example: ZED camera 20cm forward (x=0.2), 15cm up (z=0.15) on the base_link -->
+    <!-- Args: x y z yaw pitch roll parent_frame child_frame period_in_ms -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_zed_broadcaster"
+          args="0.2 0.0 0.15 0.0 0.0 0.0 base_link zed_left_camera_frame" />
+          <!-- *** ADJUST THE 6 VALUES (x y z yaw pitch roll) FOR YOUR SETUP *** -->
+          <!-- Ensure child_frame 'zed_left_camera_frame' matches the frame_id used in perception_node.py -->
+
+  </group> <!-- end ns="fake_robot_state" -->
+
+</launch>

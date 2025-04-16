@@ -1,0 +1,93 @@
+<launch>
+
+  <!-- ================== FAKE ROBOT STATE ================== -->
+
+  <!-- 1. Fake Odometry Publisher (Publishes /odom and odom -> base_link TF) -->
+  <!-- *** Ensure 'my_test_setup' is the correct package name for fake_odom_pub.py *** -->
+  <node pkg="my_test_setup" type="fake_odom_pub.py" name="fake_odom_publisher" output="screen" />
+
+  <!-- 2. Static Transform Publisher (base_link -> laser_link) -->
+  <!-- IMPORTANT: You MUST adjust the 'args' below based on your laser's position relative to base_link! -->
+  <!-- Args: x y z yaw pitch roll parent_frame child_frame -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_laser_broadcaster"
+        args="0.1 0.0 0.0 0.0 0.0 0.0 base_link laser_link" />
+        <!-- *** ADJUST THE 6 VALUES (x y z yaw pitch roll) FOR YOUR SETUP *** -->
+
+  <!-- 3. Static Transform Publisher (base_link -> zed_camera_link) -->
+  <!-- IMPORTANT: You MUST adjust the 'args' below based on your ZED camera's position relative to base_link! -->
+  <!-- Example: ZED camera 20cm forward (x=0.2), 15cm up (z=0.15) on the base_link -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_zed_broadcaster"
+        args="0.2 0.0 0.15 0.0 0.0 0.0 base_link zed_left_camera_frame" />
+        <!-- *** ADJUST THE 6 VALUES (x y z yaw pitch roll) FOR YOUR SETUP *** -->
+        <!-- Ensure child_frame 'zed_left_camera_frame' matches the frame_id used in perception_node.py -->
+
+
+  <!-- ================== SENSORS ================== -->
+
+  <!-- 4. Start the URG Node (Laser Scanner) -->
+  <node pkg="urg_node" type="urg_node" name="urg_node">
+      <!-- IMPORTANT: Set the correct connection parameter -->
+      <param name="port" value="/dev/ttyACM0"/> <!-- *** CHECK/CHANGE this port *** -->
+      <!-- <param name="ip_address" value="192.168.0.10"/> --> <!-- Or use IP address -->
+
+      <!-- IMPORTANT: frame_id MUST match the child_frame in the base_to_laser TF -->
+      <param name="frame_id" value="laser_link"/>
+  </node>
+
+  <!-- 5. Start the Perception Node (ZED + YOLO) -->
+  <!-- *** Ensure 'my_perception_pkg' is the correct package name *** -->
+  <!-- *** Place your YOLO model (e.g., yolov8m.pt) inside my_perception_pkg/models/ *** -->
+  <node pkg="my_test_setup" type="preseption_node.py" name="preseption_node" output="screen">
+      <!-- Parameters for YOLO -->
+      <param name="weights" value="/home/robot/xjobb/yolodetection/yolo11n.pt"/> <!-- Adjust path if needed -->
+      <param name="img_size" value="640"/>
+      <param name="conf_thres" value="0.4"/>
+      <param name="iou_thres" value="0.5"/>
+
+      <!-- Optional: Specify SVO file path instead of live camera -->
+      <!-- <param name="svo" value="/path/to/your/file.svo"/> -->
+  </node>
+
+
+  <!-- ================== GEMINI NAVIGATION LOGIC ================== -->
+
+  <!-- 6. Start the Gemini Navigator Node -->
+  <!-- This node subscribes to /perception/* topics and /odom -->
+  <!-- It publishes /gemini/direction and /gemini/speed when a person is detected -->
+  <!-- *** NOTE: This node DOES NOT directly control the robot (no /cmd_vel output) *** -->
+  <node pkg="my_test_setup" type="gemini_node.py" name="gemini_node" output="screen">
+      <!-- Parameter for Gemini call interval (seconds) -->
+      <param name="gemini_interval" value="5.0"/>
+
+      <!-- Optional/Recommended: Pass API Key securely via environment variable -->
+      <!-- Ensure GOOGLE_API_KEY is set in the terminal before running roslaunch -->
+      <!-- <param name="google_api_key" value="$(env GOOGLE_API_KEY)" /> -->
+      <!-- The script currently uses python-dotenv, so ensure .env file is findable -->
+  </node>
+
+
+  <!-- ================== FAKE GOAL (Example for DWA) ================== -->
+
+  <!-- 7. Publish a Single Fake Goal using rostopic pub -->
+  <!-- Sends one message to /move_base_simple/goal and exits -->
+  <!-- Goal: Go to x=2.0, y=0.5 meters in the 'odom' frame -->
+  <node pkg="rostopic" type="rostopic" name="fake_goal_publisher"
+        args="pub /move_base_simple/goal geometry_msgs/PoseStamped --once '{header: {stamp: now, frame_id: odom}, pose: {position: {x: 2.0, y: 0.5, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.124, w: 0.992}}}'"
+        output="screen"/>
+        <!-- Ensure frame_id 'odom' matches the fake odometry frame -->
+
+
+  <!-- ================== PLANNER (Example using DWA) ================== -->
+
+  <!-- 8. Include the DWA Planner Launch File -->
+  <!-- Assumes DWA is configured to use /odom, /scan, and output /cmd_vel -->
+  <!-- NOTE: DWA will likely ignore Gemini's output unless you add a node -->
+  <!--       to translate /gemini/* topics into goals or velocity commands -->
+  <include file="$(find dwa_planner)/launch/local_planner.launch" />
+
+
+  <!-- ================== Optional: Visualization ================== -->
+  <!-- <node type="rviz" name="rviz" pkg="rviz" args="-d $(find my_test_setup)/rviz/dwa_test.rviz" /> -->
+   <!-- *** Make sure to add topics like /perception/image_raw, /gemini/direction, /gemini/speed to your RViz config *** -->
+
+</launch>

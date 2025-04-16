@@ -1,0 +1,19 @@
+<launch>
+
+  <!-- ================== SENSORS ================== -->
+  <group ns="lidar">
+
+    <!-- 4. Start the URG Node (Laser Scanner) -->
+    <node pkg="urg_node" type="urg_node" name="urg_node">
+        <!-- IMPORTANT: Set the correct connection parameter -->
+        <param name="port" value="/dev/ttyACM0"/> <!-- *** CHECK/CHANGE this port *** -->
+        <!-- <param name="ip_address" value="192.168.0.10"/> --> <!-- Or use IP address -->
+
+        <!-- IMPORTANT: frame_id MUST match the child_frame in the base_to_laser TF -->
+        <!-- Assumes TF is published by 01_fake_robot_state.launch -->
+        <param name="frame_id" value="laser_link"/>
+    </node>
+
+  </group> <!-- end ns="sensors" -->
+
+</launch>

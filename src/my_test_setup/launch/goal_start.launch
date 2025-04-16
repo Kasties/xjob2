@@ -1,0 +1,19 @@
+<!-- 05_fake_goal.launch -->
+<launch>
+
+  <!-- ================== FAKE GOAL (Example for DWA) ================== -->
+  <group ns="testing_utils">
+
+    <!-- 7. Publish a Single Fake Goal using rostopic pub -->
+    <!-- Sends one message to /move_base_simple/goal and exits -->
+    <!-- Goal: Go to x=2.0, y=0.5 meters in the 'odom' frame -->
+    <!-- Requires a node (like move_base from DWA) subscribing to /move_base_simple/goal -->
+    <!-- Requires the 'odom' frame (e.g., from 01_fake_robot_state.launch) -->
+    <node pkg="rostopic" type="rostopic" name="fake_goal_publisher"
+          args="pub /move_base_simple/goal geometry_msgs/PoseStamped --once '{header: {stamp: now, frame_id: odom}, pose: {position: {x: 2.0, y: 0.5, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.124, w: 0.992}}}'"
+          output="screen"/>
+          <!-- Ensure frame_id 'odom' matches the fake odometry frame -->
+
+  </group> <!-- end ns="testing_utils" -->
+
+</launch>

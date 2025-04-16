@@ -1,0 +1,27 @@
+<!-- 02_sensors.launch -->
+<launch>
+
+  <!-- ================== SENSORS ================== -->
+  <group ns="sensors">
+
+
+    <!-- 5. Start the Perception Node (ZED + YOLO) -->
+    <!-- *** Ensure 'my_test_setup' is the correct package name *** -->
+    <!-- *** Place your YOLO model (e.g., yolov8m.pt) inside my_perception_pkg/models/ *** -->
+    <node pkg="my_test_setup" type="preseption_node.py" name="preseption_node" output="screen">
+        <!-- Parameters for YOLO -->
+        <param name="weights" value="/home/robot/xjobb/yolodetection/yolo11n.pt"/> <!-- Adjust path if needed -->
+        <param name="img_size" value="640"/>
+        <param name="conf_thres" value="0.4"/>
+        <param name="iou_thres" value="0.5"/>
+
+        <!-- Optional: Specify SVO file path instead of live camera -->
+        <!-- <param name="svo" value="/path/to/your/file.svo"/> -->
+
+        <!-- Ensure the perception node uses the correct frame_id internally, e.g., "zed_left_camera_frame" -->
+        <!-- This frame_id should be published by 01_fake_robot_state.launch -->
+    </node>
+
+  </group> <!-- end ns="sensors" -->
+
+</launch>

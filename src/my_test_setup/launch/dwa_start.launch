@@ -1,0 +1,20 @@
+<!-- 04_planner_stack.launch -->
+<launch>
+
+  <!-- ================== PLANNER (Example using DWA) ================== -->
+  <group ns="planning">
+
+    <!-- 8. Include the DWA Planner Launch File -->
+    <!-- Assumes DWA is configured to use /odom, /scan, and output /cmd_vel -->
+    <!-- Assumes /odom and TFs are provided by 01_fake_robot_state.launch -->
+    <!-- Assumes /scan is provided by 02_sensors.launch -->
+    <!-- NOTE: DWA will likely ignore Gemini's output unless you add a node -->
+    <!--       to translate /gemini/* topics into goals or velocity commands -->
+    <include file="$(find dwa_planner)/launch/local_planner.launch" />
+    <!-- IMPORTANT: Ensure the parameters within dwa_planner's launch/config files -->
+    <!--            correctly reference the topics/frames being published -->
+    <!--            (e.g., odom_topic: /odom, scan_topic: /scan, global_frame_id: odom, base_frame_id: base_link) -->
+
+  </group> <!-- end ns="planning" -->
+
+</launch>
